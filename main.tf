@@ -164,7 +164,7 @@ output "main_vpc_id" {
 #
 resource "aws_vpc_endpoint" "s3_endpoint" {
   vpc_id      = data.aws_vpcs.main.ids[0]
-  service_name = "com.amazonaws.your-region.s3"
+  service_name = "com.amazonaws.eu-central-1.s3"
 }
 ##
 
