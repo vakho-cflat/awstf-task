@@ -8,6 +8,39 @@ provider "aws" {
 ## s3 bucket creation
 resource "aws_s3_bucket" "devops-tbc-vtabatadze" {
     bucket = var.s3bucketname
+  }
+resource "aws_s3_bucket_acl" "devops-tbc-acl" {
+  bucket = var.s3bucketname
+  acl = "public-read"
+}
+resource "aws_s3_bucket_website_configuration" "devops-tbc-vtabatadze" {
+  bucket = var.s3bucketname
+  index_document {
+    suffix = "index.html"
+  }
+}
+output "devops-tbc-arn" {
+  value = aws_s3_bucket.devops-tbc-vtabatadze.arn
+}
+##
+
+
+## creating public bucket policy
+resource "aws_s3_bucket_policy" "bucket_policy_public" {
+  bucket = var.s3bucketname
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = "s3:GetObject",
+        Resource = ["${aws_s3_bucket.devops-tbc-vtabatadze.arn}/index.html"],
+        Principal = {
+          AWS = "*"
+        }
+      }
+    ]
+  })
 }
 ##
 
@@ -147,42 +180,6 @@ output "ec2_instance_public_dns" {
 ##
 
 
-## vpc id for s3 access
-data "aws_vpcs" "main" {}
-output "main_vpc_id" {
-  value = data.aws_vpcs.main.ids[0]
-}
-#
-resource "aws_vpc_endpoint" "s3_endpoint" {
-  vpc_id      = data.aws_vpcs.main.ids[0]
-  service_name = "com.amazonaws.eu-central-1.s3"
-}
-##
-
-
-## sg for s3 access
-resource "aws_security_group" "s3-access-sg" {
-  name        = "s3-access-sg"
-  description = "allow outbound traffic to S3 endpoint"
-  vpc_id      = data.aws_vpcs.main.ids[0]
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["${aws_instance.ec2_1.private_ip}/32"]
-  }
-
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-##
-
-
 ## secrets manager password generation
 resource "random_password" "master" {
   length	   = 16
@@ -276,5 +273,4 @@ resource "aws_cloudfront_distribution" "cloudfront-tbc" {
   }
 }
 ##
-
 
