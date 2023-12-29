@@ -19,4 +19,5 @@ jobs:
 
     - name: Apllying Configuration
       run: |
-	terraform apply --auto-approve
+        terraform apply --auto-remove
+
