@@ -9,11 +9,33 @@ provider "aws" {
 resource "aws_s3_bucket" "devops-tbc-vtabatadze" {
     bucket = var.s3bucketname
   }
-resource "aws_s3_bucket_acl" "devops-tbc-acl" {
+resource "aws_s3_bucket_public_access_block" "public_access" {
   bucket = var.s3bucketname
-  acl = "public-read"
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
-resource "aws_s3_bucket_website_configuration" "devops-tbc-vtabatadze" {
+
+resource "aws_s3_bucket_policy" "bucket_policy" {
+  bucket = var.s3bucketname
+
+  policy = jsonencode({
+    Version   = "2012-10-17",
+    Id        = "bucketpolicy_public",
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject",
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = ["s3:GetObject"],
+        Resource  = ["${aws_s3_bucket.devops-tbc-vtabatadze.arn}/index.html"],
+      },
+    ],
+  })
+}
+
+resource "aws_s3_bucket_website_configuration" "static_website" {
   bucket = var.s3bucketname
   index_document {
     suffix = "index.html"
@@ -23,27 +45,6 @@ output "devops-tbc-arn" {
   value = aws_s3_bucket.devops-tbc-vtabatadze.arn
 }
 ##
-
-
-## creating public bucket policy
-resource "aws_s3_bucket_policy" "bucket_policy_public" {
-  bucket = var.s3bucketname
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = "s3:GetObject",
-        Resource = ["${aws_s3_bucket.devops-tbc-vtabatadze.arn}/index.html"],
-        Principal = {
-          AWS = "*"
-        }
-      }
-    ]
-  })
-}
-##
-
 
 ## iam policy to access rds
 resource "aws_iam_policy" "ec2_read_only_policy" {
@@ -103,12 +104,7 @@ resource "aws_iam_role_policy_attachment" "rds_policy_attachment" {
   policy_arn = aws_iam_policy.ec2_read_only_policy.arn
   role       = aws_iam_role.ec2_1_role.name
 }
-resource "aws_iam_role_policy_attachment" "s3_read_only_policy_attachment" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
-  role       = aws_iam_role.ec2_1_role.name
-}
 ##
-
 
 ## ec2 security group for ssh and web traffic
 resource "aws_security_group" "ec2_1_instance" {
@@ -187,7 +183,7 @@ resource "random_password" "master" {
   override_special = "!%_^"
 }
 resource "aws_secretsmanager_secret" "password" {
-  name = "postgres-password"
+  name = "postgres12-password"
 }
 resource "aws_secretsmanager_secret_version" "password" {
   secret_id = aws_secretsmanager_secret.password.id
