@@ -7,7 +7,7 @@ on:
 
 jobs:
   run-command:
-    runs-on: runner-ci
+    runs-on: runner01
 
     steps:
     - name: Checkout Repository
