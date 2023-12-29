@@ -196,6 +196,7 @@ resource "aws_secretsmanager_secret_version" "password" {
 ## rds postgres creation
 data "aws_secretsmanager_secret_version" "password" {
   secret_id = aws_secretsmanager_secret.password.id
+  depends_on = [aws_secretsmanager_secret_version.password]
 }
 resource "aws_db_instance" "postgresql" {
   identifier	      	 = "postresql" 
