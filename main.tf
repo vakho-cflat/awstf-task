@@ -184,7 +184,7 @@ resource "random_password" "master" {
   override_special = "!%_^"
 }
 resource "aws_secretsmanager_secret" "password" {
-  name = "postgres13-password"
+  name = "postgres21-password"
 }
 resource "aws_secretsmanager_secret_version" "password" {
   secret_id = aws_secretsmanager_secret.password.id
