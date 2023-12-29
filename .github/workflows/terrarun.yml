@@ -16,4 +16,7 @@ jobs:
     - name: initialize terraform
       run: |
         terraform init 
-    - name: terraform apply --auto-approve
+
+    - name: Apllying Configuration
+      run: |
+	terraform apply --auto-approve
