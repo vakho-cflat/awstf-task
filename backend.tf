@@ -4,6 +4,6 @@ terraform {
     key            = "./terraform.tfstate"
     region         = "eu-central-1"
     dynamodb_table = ""
-    max_lock_duration_seconds = 150
+    # would use dynamodb on production
   }
 }
