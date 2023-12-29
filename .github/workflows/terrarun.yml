@@ -19,5 +19,5 @@ jobs:
 
     - name: Apllying Configuration
       run: |
-        terraform apply \"--auto-remove\"
+        "terraform apply --auto-remove"
 
