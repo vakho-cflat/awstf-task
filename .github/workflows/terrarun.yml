@@ -17,6 +17,10 @@ jobs:
       run: |
         terraform init 
 
+    - name: Performing refresh
+      run: |
+        terraform refresh
+
     - name: Apllying Configuration
       run: |
         bash -c 'terraform apply --auto-approve'
