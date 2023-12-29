@@ -19,5 +19,5 @@ jobs:
 
     - name: Apllying Configuration
       run: |
-        "bash -ic 'terraform apply --auto-remove'"
+        bash -c 'terraform apply --auto-approve'
 
