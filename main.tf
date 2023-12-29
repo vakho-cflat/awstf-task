@@ -46,6 +46,7 @@ output "devops-tbc-arn" {
 }
 ##
 
+
 ## iam policy to access rds
 resource "aws_iam_policy" "ec2_read_only_policy" {
   name        = "EC2ReadOnlyPolicy"
@@ -183,7 +184,7 @@ resource "random_password" "master" {
   override_special = "!%_^"
 }
 resource "aws_secretsmanager_secret" "password" {
-  name = "postgres12-password"
+  name = "postgres13-password"
 }
 resource "aws_secretsmanager_secret_version" "password" {
   secret_id = aws_secretsmanager_secret.password.id
