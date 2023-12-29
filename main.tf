@@ -1,16 +1,18 @@
-# region
+## region
 provider "aws" {
   region = "eu-central-1"
 }
+##
 
 
-# s3 bucket creation
+## s3 bucket creation
 resource "aws_s3_bucket" "devops-tbc-vtabatadze" {
-    bucket = "devops-tbc-vtabatadze"
+    bucket = var.s3bucketname
 }
+##
 
 
-# iam policy to access rds
+## iam policy to access rds
 resource "aws_iam_policy" "ec2_read_only_policy" {
   name        = "EC2ReadOnlyPolicy"
   description = "Policy for read-only access from EC2 to RDS"
@@ -43,9 +45,10 @@ resource "aws_iam_policy" "ec2_read_only_policy" {
     ],
   })
 }
+##
 
 
-# iam role for ec2 instance
+## iam role for ec2 instance with rds and s3 access rights
 resource "aws_iam_role" "ec2_1_role" {
   name = "ec2_1_role"
   
@@ -61,13 +64,29 @@ resource "aws_iam_role" "ec2_1_role" {
       }
     ]
   })
+
+  inline_policy {
+    name = "s3-access-policy"
+    policy = jsonencode({
+      Version = "2012-10-17",
+      Statement = [
+        {
+          Effect   = "Allow",
+          Action   = ["s3:GetObject", "s3:ListBucket"],
+          Resource = ["arn:aws:s3:::${var.s3bucketname}/*", "arn:aws:s3:::${var.s3bucketname}"]
+        }
+      ]
+    })
+  }
 }
 resource "aws_iam_role_policy_attachment" "rds_policy_attachment" {
   policy_arn = aws_iam_policy.ec2_read_only_policy.arn
   role       = aws_iam_role.ec2_1_role.name
 }
+##
 
-# ec2 security group for ssh and web traffic
+
+## ec2 security group for ssh and web traffic
 resource "aws_security_group" "ec2_1_instance" {
   name        = "ssh-web"
   description = "security group for ssh and web traffice"
@@ -97,16 +116,18 @@ resource "aws_security_group" "ec2_1_instance" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+##
 
 
-# key pair for ssh
+## key pair for ssh
 resource "aws_key_pair" "ssh" {
   key_name   = "ssh_key"
   public_key = file("./id_rsa.pub")
 }
+##
 
 
-# ec2 instance creation
+## ec2 instance creation
 resource "aws_instance" "ec2_1" {
   ami             = "ami-02da8ff11275b7907"
   instance_type   = "t2.micro"
@@ -132,9 +153,46 @@ output "ec2_instance_private_ip" {
 output "ec2_instance_public_dns" {
   value = aws_instance.ec2_1.public_dns
 } 
+##
 
 
-# secrets manager password generation
+## vpc id for s3 access
+data "aws_vpcs" "main" {}
+output "main_vpc_id" {
+  value = data.aws_vpcs.main.ids[0]
+}
+#
+resource "aws_vpc_endpoint" "s3_endpoint" {
+  vpc_id      = data.aws_vpcs.main.ids[0]
+  service_name = "com.amazonaws.your-region.s3"
+}
+##
+
+
+## sg for s3 access
+resource "aws_security_group" "s3-access-sg" {
+  name        = "s3-access-sg"
+  description = "allow outbound traffic to S3 endpoint"
+  vpc_id      = data.aws_vpcs.main.ids[0]
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["${aws_instance.ec2_1.private_ip}/32"]
+  }
+
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+##
+
+
+## secrets manager password generation
 resource "random_password" "master" {
   length	   = 16
   special	   = true
@@ -148,7 +206,9 @@ resource "aws_secretsmanager_secret_version" "password" {
   secret_string = random_password.master.result
   depends_on = [aws_secretsmanager_secret.password]
 }
+##
 
+## rds postgres creation
 data "aws_secretsmanager_secret_version" "password" {
   secret_id = aws_secretsmanager_secret.password.id
 }
@@ -181,9 +241,10 @@ resource "aws_security_group" "instance" {
     cidr_blocks	= ["${aws_instance.ec2_1.private_ip}/32"]
  }
 }
+##
 
 
-# cloudfront distribution
+## cloudfront distribution
 resource "aws_cloudfront_distribution" "cloudfront-tbc" {
   origin {
     domain_name = aws_instance.ec2_1.public_dns
@@ -223,4 +284,6 @@ resource "aws_cloudfront_distribution" "cloudfront-tbc" {
     cloudfront_default_certificate = true
   }
 }
+##
+
 
