@@ -64,23 +64,14 @@ resource "aws_iam_role" "ec2_1_role" {
       }
     ]
   })
-
-  inline_policy {
-    name = "s3-access-policy"
-    policy = jsonencode({
-      Version = "2012-10-17",
-      Statement = [
-        {
-          Effect   = "Allow",
-          Action   = ["s3:GetObject", "s3:ListBucket"],
-          Resource = ["arn:aws:s3:::${var.s3bucketname}/*", "arn:aws:s3:::${var.s3bucketname}"]
-        }
-      ]
-    })
-  }
 }
+
 resource "aws_iam_role_policy_attachment" "rds_policy_attachment" {
   policy_arn = aws_iam_policy.ec2_read_only_policy.arn
+  role       = aws_iam_role.ec2_1_role.name
+}
+resource "aws_iam_role_policy_attachment" "s3_read_only_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
   role       = aws_iam_role.ec2_1_role.name
 }
 ##
