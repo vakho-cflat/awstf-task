@@ -83,7 +83,7 @@ resource "aws_iam_policy" "ec2_read_only_policy" {
 ##
 
 
-## iam role for ec2 instance with rds and s3 access rights
+## iam role for ec2 instance with rds access rights
 resource "aws_iam_role" "ec2_1_role" {
   name = "ec2_1_role"
   
@@ -107,10 +107,11 @@ resource "aws_iam_role_policy_attachment" "rds_policy_attachment" {
 }
 ##
 
+
 ## ec2 security group for ssh and web traffic
 resource "aws_security_group" "ec2_1_instance" {
   name        = "ssh-web"
-  description = "security group for ssh and web traffice"
+  description = "security group for ssh and web traffic"
 #  
   ingress {
     from_port   = 22
@@ -192,6 +193,7 @@ resource "aws_secretsmanager_secret_version" "password" {
   depends_on = [aws_secretsmanager_secret.password]
 }
 ##
+
 
 ## rds postgres creation
 data "aws_secretsmanager_secret_version" "password" {
