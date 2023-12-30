@@ -203,7 +203,7 @@ resource "aws_db_instance" "postgresql" {
   allocated_storage  	 = 5
   storage_type       	 = "gp2"
   engine              	 = "postgres"
-  engine_version      	 = "12.13"
+  engine_version      	 = "12.14"
   instance_class      	 = "db.t2.micro"
   parameter_group_name	 = "default.postgres12"
   publicly_accessible 	 = false
