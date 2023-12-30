@@ -111,7 +111,7 @@ resource "aws_iam_role_policy_attachment" "rds_policy_attachment" {
 ## ec2 security group for ssh and web traffic
 resource "aws_security_group" "ec2_1_instance" {
   name        = "ssh-web"
-  description = "security group for ssh and web traffic"
+  description = "security group for ssh and web traffice"
 #  
   ingress {
     from_port   = 22
