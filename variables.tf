@@ -5,3 +5,9 @@ variable "s3bucketname" {
   type        = string
   default     = "devops-tbc-vtabatadze"
 }
+
+variable "postgresql-password" {
+  description = "postgresql password"
+  type        = string
+  default     = "postgres21-password"
+}
