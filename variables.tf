@@ -9,5 +9,5 @@ variable "s3bucketname" {
 variable "postgresql-password" {
   description = "postgresql password"
   type        = string
-  default     = "postgres21-password"
+  default     = "postgres25-password"
 }
